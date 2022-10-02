@@ -28,6 +28,8 @@ from host open 192.168.0.1:1997 on your browser
 # Note  
 * default port is *1997*
 
+* maximum uploaded file's size is 50Kb
+
 * Currently this software support chrome only.
 
 * To view original file (with some special characters in text which make html [encoded](https://www.w3schools.com/tags/ref_urlencode.ASP) -> go to inspector-> network->  response ( in raw mode if needed)
