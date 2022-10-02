@@ -193,41 +193,7 @@ void send_404(struct client_info *client) {
     send(client->socket, c404, strlen(c404), 0);
     drop_client(client);
 }
-
-void serve_resource(struct client_info *client, const char *path) {
-
-    printf("serve_resource %s %s\n", get_client_address(client), path);
-    char cmd[200];
-    char *p = strdup(path);
-    for (int i = 0; i < strlen(p); i++) {
-        if (i == 0 && p[i] == '/') {
-            p[i] = ' ';
-        }
-
-        if (p[i] == 'Q')
-            p[i] = ' ';
-    }
-
-    FILE *fp = popen(p, "r");
-    puts(p);
-    free(p);
-
-    puts(p);
-    if (!fp) {
-        perror("popen error\n");
-        send_400(client);
-        return;
-    }
-
-    if (strlen(path) > 100) {
-        send_400(client);
-        return;
-    }
-
-    if (strstr(path, "..")) {
-        send_404(client);
-        return;
-    }
+void write_response(struct client_info *client, FILE *fp) {
 
     const char *ct = get_content_type("/.html");
 
@@ -249,14 +215,98 @@ void serve_resource(struct client_info *client, const char *path) {
     sprintf(buffer, "\r\n");
     send(client->socket, buffer, strlen(buffer), 0);
 
+    FILE *fp_form = fopen("form.html", "r");
+    if (!fp_form) {
+        perror("can't open form.html\n");
+    } else {
+        while (fgets(buffer, BSIZE, fp_form)) {
+            send(client->socket, buffer, strlen(buffer), 0);
+        }
+    }
+
     while (fgets(buffer, BSIZE, fp)) {
         send(client->socket, buffer, strlen(buffer), 0);
         send(client->socket, "<br>", strlen("<br>"), 0);
         puts(buffer);
     }
 
+    while (fgets(buffer, BSIZE, fp)) {
+        send(client->socket, buffer, strlen(buffer), 0);
+        send(client->socket, "<br>", strlen("<br>"), 0);
+        puts(buffer);
+    }
+    const char *endOfHtml = "</body> </html>";
+    send(client->socket, endOfHtml, strlen(endOfHtml), 0);
+
     pclose(fp);
     drop_client(client);
+}
+
+void decodeHTML(const char *cmd, char *output) {
+    size_t ip = 0;
+    for (int i = 0; i < strlen(cmd); i++) {
+        char c = cmd[i];
+        if (cmd[i] == '+')
+            c = ' ';
+
+        if (i + 2 < strlen(cmd) && cmd[i] == '%') {
+            switch (cmd[i + 1]) {
+            case '2':
+                switch (cmd[i + 2]) {
+                case 'F':
+                    c = '/';
+                    break;
+                default:
+                    break;
+                }
+                break;
+            case '7':
+                switch (cmd[i + 2]) {
+                case 'E':
+                    c = '~';
+                    break;
+                default:
+                    break;
+                }
+                break;
+            default:
+                printf("this char haven't support yet [%% %c %c]\n", cmd[i + 1],
+                       cmd[i + 2]);
+
+                break;
+            }
+            i += 2;
+        }
+
+        output[ip] = c;
+        ip++;
+    }
+}
+void serve_command(struct client_info *client, const char *cmd) {
+    printf("serve_command %s %s\n", get_client_address(client), cmd);
+    printf("len of command is %lu\n", strlen(cmd));
+
+#define MAX_CMD_BUF 200
+    char p[MAX_CMD_BUF];
+    memset(p, 0, MAX_CMD_BUF);
+
+    decodeHTML(cmd, p);
+    puts(p);
+
+    FILE *fp = popen(p, "r");
+
+    if (!fp) {
+        perror("popen error\n");
+        send_400(client);
+        return;
+    }
+
+    if (strlen(cmd) > MAX_CMD_BUF / 2) {
+        send_400(client);
+        return;
+    }
+
+    write_response(client, fp);
 }
 
 int main() {
@@ -307,24 +357,37 @@ int main() {
                 } else {
                     client->received += r;
                     client->request[client->received] = 0;
-
-                    char *q = strstr(client->request, "\r\n\r\n");
-                    if (q) {
-                        *q = 0;
-
-                        if (strncmp("GET /", client->request, 5)) {
+                    //                    puts(client->request);
+                    if (!strncmp("POST /", client->request, 5)) {
+                        char *cmd = strstr(client->request, "command=");
+                        if (!cmd)
                             send_400(client);
-                        } else {
-                            char *path = client->request + 4;
-                            char *end_path = strstr(path, " ");
-                            if (!end_path) {
-                                send_400(client);
-                            } else {
-                                *end_path = 0;
-                                serve_resource(client, path);
-                            }
+                        else {
+                            puts(cmd + strlen("command="));
+                            serve_command(client, cmd + strlen("command="));
                         }
-                    } // if (q)
+
+                    } else {
+
+                        char *q = strstr(client->request, "\r\n\r\n");
+                        if (q) {
+                            *q = 0;
+
+                            if (!strncmp("GET /", client->request, 5)) {
+                                char *path =
+                                    client->request + 6 + strlen("command=");
+                                char *end_path = strstr(path, " ");
+                                if (!end_path) {
+                                    send_400(client);
+                                } else {
+                                    *end_path = 0;
+                                    serve_command(client, path);
+                                }
+                            } else {
+                                send_400(client);
+                            }
+                        } // if (q)
+                    }
                 }
             }
 

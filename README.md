@@ -9,14 +9,11 @@ target <==ethernet/wifi==> host
 + step 1  
 attach this binary to target and run it.  
 + step 2   
-from host create request to target over http like this
-```
-// call curl from target 
-// target IP:port : 192.168.0.1:1997  
-// in target : it run curl 192.168.0.41:8080/logo_index.png --ouput /www/web/image/logo_index.png
+from host open 192.168.0.1:1997 on your browser
 
-curl 192.168.0.1:1997/curlQ192.168.0.41:8080/logo_index.pngQ--outputQ/www/web/image/logo_index.png
-```
+Updating upload feature
++ Temporary get from host however you need run a webserver on host
 
-#Note
-space = 'Q'
+```
+curl 192.168.0.41:8080/logo_index.png --output /www/web/image/logo_index.png
+```
