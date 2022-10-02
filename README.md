@@ -1,5 +1,6 @@
 # shellcrosshttp
 ![remote to BBB](remote_bbb.png)
+![cat a BBB](catAFile.png)
 
 
 shell scripting over HTTP 
