@@ -30,6 +30,6 @@ from host open 192.168.0.1:1997 on your browser
 
 * To view original file (with some special characters in text which make html [encoded](https://www.w3schools.com/tags/ref_urlencode.ASP) -> go to inspector-> network->  response ( in raw mode if needed)
 
-![view_raw_data](assets/view_rawdata.png.png)
+![view_raw_data](assets/view_rawdata.png)
 
 
