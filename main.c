@@ -227,8 +227,14 @@ void write_response(struct client_info *client, FILE *fp) {
 
     send(client->socket, "<pre><code>", strlen("<pre><code>"), 0);
     while (fgets(buffer, BSIZE, fp)) {
+        if (strstr(buffer, "include"))
+            for (int i = 0; i < strlen(buffer); i++) {
+                if (buffer[i] == '<')
+                    buffer[i] = '(';
+                else if (buffer[i] == '>')
+                    buffer[i] = ')';
+            }
         send(client->socket, buffer, strlen(buffer), 0);
-        send(client->socket, "<br>", strlen("<br>"), 0);
         puts(buffer);
     }
 
