@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html>
 <body>
+<p>Click on the "Choose File" button to upload a file:</p>
+<iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>
+<form method=POST action="/" enctype="multipart/form-data" target="dummyframe">
+	  <input type="file" id="myFile" name="filename">
+	    <input type="submit">
+</form>
+
 
 <form action="/" method="GET" target="">
   <label for="command">command:</label>

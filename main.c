@@ -92,7 +92,8 @@ SOCKET create_socket(const char *host, const char *port) {
     return socket_listen;
 }
 
-#define MAX_REQUEST_SIZE 2047
+// 50k
+#define MAX_REQUEST_SIZE (1024 * 50)
 
 struct client_info {
     socklen_t address_length;
@@ -224,18 +225,14 @@ void write_response(struct client_info *client, FILE *fp) {
         }
     }
 
+    send(client->socket, "<pre><code>", strlen("<pre><code>"), 0);
     while (fgets(buffer, BSIZE, fp)) {
         send(client->socket, buffer, strlen(buffer), 0);
         send(client->socket, "<br>", strlen("<br>"), 0);
         puts(buffer);
     }
 
-    while (fgets(buffer, BSIZE, fp)) {
-        send(client->socket, buffer, strlen(buffer), 0);
-        send(client->socket, "<br>", strlen("<br>"), 0);
-        puts(buffer);
-    }
-    const char *endOfHtml = "</body> </html>";
+    const char *endOfHtml = "</code></pre></body> </html>";
     send(client->socket, endOfHtml, strlen(endOfHtml), 0);
 
     pclose(fp);
@@ -309,6 +306,103 @@ void serve_command(struct client_info *client, const char *cmd) {
     write_response(client, fp);
 }
 
+void fake200(struct client_info *client) {
+#define BSIZE 1024
+    char buffer[BSIZE];
+
+    const char *ct = get_content_type("/.html");
+    sprintf(buffer, "HTTP/1.1 200 OK\r\n");
+    send(client->socket, buffer, strlen(buffer), 0);
+
+    sprintf(buffer, "Connection: close\r\n");
+    send(client->socket, buffer, strlen(buffer), 0);
+
+    send(client->socket, buffer, strlen(buffer), 0);
+
+    sprintf(buffer, "Content-Type: %s; charset=utf-8\r\n", ct);
+    send(client->socket, buffer, strlen(buffer), 0);
+
+    sprintf(buffer, "\r\n");
+    send(client->socket, buffer, strlen(buffer), 0);
+
+    drop_client(client);
+}
+
+void handleGET(struct client_info *client) {
+    char *q = strstr(client->request, "\r\n\r\n");
+    if (q) {
+        *q = 0;
+        if (!strncmp("GET /favicon.ico", client->request, 14)) {
+            fake200(client);
+        } else if (!strncmp("GET /", client->request, 5)) {
+            char *path = client->request + 6 + strlen("command=");
+            char *end_path = strstr(path, " ");
+            if (!end_path) {
+                send_400(client);
+            } else {
+                *end_path = 0;
+                serve_command(client, path);
+            }
+        } else {
+            send_400(client);
+        }
+    }
+}
+void writeToFile(const char *filePath, const char *buf) {
+    char tmpPath[100];
+    snprintf(tmpPath, sizeof(tmpPath), "/tmp/%s", filePath);
+    printf("write to file %s\n", tmpPath);
+
+    FILE *fp = fopen(tmpPath, "w");
+    if (fp) {
+        // fwrite(buf, strlen(buf), 1, fp);
+        fprintf(fp, "%s", buf);
+    } else {
+        printf("can't open file %s\n", tmpPath);
+    }
+    fclose(fp);
+}
+void handlePOST(struct client_info *client) {
+
+    char *p = strstr(client->request, "------WebKitFormBoundary");
+    if (p) {
+        if (p) {
+            p = strstr(client->request, "------WebKitFormBoundary");
+            if (p) {
+
+                p = strstr(p, "filename=");
+                char fileName[50] = {0};
+                memset(fileName, 0, sizeof(fileName));
+                int i = 0;
+                if (p) {
+                    p += strlen("filename=\"");
+                    while (p && *p && *p != '"') {
+                        fileName[i] = *p;
+                        i++;
+                        p++;
+                    }
+                    printf("file name is %s\n", fileName);
+                }
+                p = strstr(p, "Content-Type:");
+                // skip until met a newline character
+                while (*p != '\n')
+                    p++;
+                if (p) {
+                    char *head = p;
+                    char *endReq = head + strlen(head) - 2;
+                    while (endReq >= head && *endReq != '\n')
+                        endReq--;
+                    if (endReq >= head)
+                        *endReq = '\0';
+
+                    writeToFile(fileName, head);
+                }
+            }
+        }
+        fake200(client);
+    }
+}
+
 int main() {
 
     signal(SIGPIPE, SIG_IGN);
@@ -357,36 +451,14 @@ int main() {
                 } else {
                     client->received += r;
                     client->request[client->received] = 0;
-                    //                    puts(client->request);
+
+                    printf("----------------\n\n\n");
                     if (!strncmp("POST /", client->request, 5)) {
-                        char *cmd = strstr(client->request, "command=");
-                        if (!cmd)
-                            send_400(client);
-                        else {
-                            puts(cmd + strlen("command="));
-                            serve_command(client, cmd + strlen("command="));
-                        }
 
+                        printf("post\n\n");
+                        handlePOST(client);
                     } else {
-
-                        char *q = strstr(client->request, "\r\n\r\n");
-                        if (q) {
-                            *q = 0;
-
-                            if (!strncmp("GET /", client->request, 5)) {
-                                char *path =
-                                    client->request + 6 + strlen("command=");
-                                char *end_path = strstr(path, " ");
-                                if (!end_path) {
-                                    send_400(client);
-                                } else {
-                                    *end_path = 0;
-                                    serve_command(client, path);
-                                }
-                            } else {
-                                send_400(client);
-                            }
-                        } // if (q)
+                        handleGET(client);
                     }
                 }
             }
