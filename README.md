@@ -15,3 +15,6 @@ attach this binary to target and run it.
 + step 2   
 from host open 192.168.0.1:1997 on your browser
 
+# Note  
+Currently this software support chrome only.
+
