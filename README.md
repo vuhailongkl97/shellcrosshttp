@@ -33,3 +33,7 @@ from host open 192.168.0.1:1997 on your browser
 ![view_raw_data](assets/view_rawdata.png)
 
 
+# Limitation
+
+* Some special characters haven't displayed correctly yet -> temporary use view response in raw mode (above)
+* Don't try to use keep session shell commands like `top`, `ping`. Currently it will hang, coundn't stop it unless reboot the target or you must able to remote to the remote and restart `ss` program 
