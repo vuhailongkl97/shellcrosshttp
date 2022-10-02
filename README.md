@@ -12,9 +12,9 @@ Topology
 target <==ethernet/wifi==> host
 
 + step 1  
-attach this binary to target and run it.  
+attach this binary to the target and run it.  
 + step 2   
-from host open 192.168.0.1:1997 on your browser
+from host open  <target ip>:1997 on your browser. For testing you also can run directly the binary on host and open http://localhost:1997
 
 # Build & run
 `make ; ./ss`
