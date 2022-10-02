@@ -1,5 +1,5 @@
 # shellcrosshttp
-![Screenshot from 2022-10-02 11-16-37.png](https://github.com/vuhailongkl97/shellcrosshttp/blob/2583032984a7b18a6fabf199dabdf3892ae83b5b/Screenshot%20from%202022-10-02%2011-16-37.png)
+![remote to BBB](remote_bbb.png)
 
 
 shell scripting over HTTP 
