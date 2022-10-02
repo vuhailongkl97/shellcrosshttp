@@ -1,5 +1,4 @@
 /*
- *
 MIT License
 
 Copyright (c) 2022 Vu Hai Long
@@ -21,7 +20,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
- * */
+* */
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netdb.h>
@@ -251,7 +250,9 @@ void write_response(struct client_info *client, FILE *fp) {
 
     send(client->socket, "<pre><code>", strlen("<pre><code>"), 0);
     while (fgets(buffer, BSIZE, fp)) {
-        if (strstr(buffer, "include"))
+
+        // disable
+        if (0 && strstr(buffer, "include"))
             for (int i = 0; i < strlen(buffer); i++) {
                 if (buffer[i] == '<')
                     buffer[i] = '(';

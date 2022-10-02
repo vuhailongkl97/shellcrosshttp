@@ -1,6 +1,7 @@
 # shellcrosshttp
-![remote to BBB](remote_bbb.png)
-![cat a BBB](catAFile.png)
+
+![remote to BBB](assets/remote_bbb.png)
+![cat a BBB](assets/catAFile.png)
 
 
 supported shell scripting over HTTP, upload files
@@ -15,6 +16,20 @@ attach this binary to target and run it.
 + step 2   
 from host open 192.168.0.1:1997 on your browser
 
+# Build & run
+`make ; ./ss`
+
+# Test
+`make test`
+
+# Install 
+`make install`
+
 # Note  
-Currently this software support chrome only.
+* Currently this software support chrome only.
+
+* To view original file (with some special characters in text which make html [encoded](https://www.w3schools.com/tags/ref_urlencode.ASP) -> go to inspector-> network->  response ( in raw mode if needed)
+
+![view_raw_data](assets/view_rawdata.png.png)
+
 
