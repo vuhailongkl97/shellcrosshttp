@@ -3,7 +3,7 @@
 ![cat a BBB](catAFile.png)
 
 
-shell scripting over HTTP 
+supported shell scripting over HTTP, upload files
 you can use any supported command on host over HTTP  
 example : `ls` `cp`, ...  
 Topology
