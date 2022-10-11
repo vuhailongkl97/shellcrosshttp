@@ -30,14 +30,8 @@ from host open  <target ip>:1997 on your browser. For testing you also can run d
 
 * maximum uploaded file's size is 50Kb
 
-* Currently this software support chrome only.
-
-* To view original file (with some special characters in text which make html [encoded](https://www.w3schools.com/tags/ref_urlencode.ASP) -> go to inspector-> network->  response ( in raw mode if needed)
-
-![view_raw_data](assets/view_rawdata.png)
-
+* Currently this software support chrome properly.
 
 # Limitation
 
-* Some special characters haven't displayed correctly yet -> temporarily use view response in raw mode (above)
 * Don't try to use keep session shell commands like `top`, `ping`. Currently it will hang, coundn't stop it unless reboot the target or you must able to remote to the remote and restart `ss` program 
