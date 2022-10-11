@@ -251,12 +251,14 @@ void write_response(struct client_info *client, FILE *fp) {
 	const char *txtarea = "<textarea disabled=\"true\" style=\"border: none;background-color:white;width:100%;height:100%;\">";
     send(client->socket, txtarea, strlen(txtarea), 0); 
     while (fgets(buffer, BSIZE, fp)) {
-            }
+		char *tmp = strstr(buffer, "textarea");
+		if(tmp) {
+				*tmp = 'K';
+		}
         send(client->socket, buffer, strlen(buffer), 0);
         puts(buffer);
     }
 
-    const char *endOfHtml = "</code></pre></body> </html>";
     const char *endOfHtml = "</textarea>";
     send(client->socket, endOfHtml, strlen(endOfHtml), 0);
 
