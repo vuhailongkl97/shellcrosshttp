@@ -248,22 +248,16 @@ void write_response(struct client_info *client, FILE *fp) {
         }
     }
 
-    send(client->socket, "<pre><code>", strlen("<pre><code>"), 0);
+	const char *txtarea = "<textarea disabled=\"true\" style=\"border: none;background-color:white;width:100%;height:100%;\">";
+    send(client->socket, txtarea, strlen(txtarea), 0); 
     while (fgets(buffer, BSIZE, fp)) {
-
-        // disable
-        if (0 && strstr(buffer, "include"))
-            for (int i = 0; i < strlen(buffer); i++) {
-                if (buffer[i] == '<')
-                    buffer[i] = '(';
-                else if (buffer[i] == '>')
-                    buffer[i] = ')';
             }
         send(client->socket, buffer, strlen(buffer), 0);
         puts(buffer);
     }
 
     const char *endOfHtml = "</code></pre></body> </html>";
+    const char *endOfHtml = "</textarea>";
     send(client->socket, endOfHtml, strlen(endOfHtml), 0);
 
     pclose(fp);
